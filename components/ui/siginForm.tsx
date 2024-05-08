@@ -1,9 +1,6 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
-import { LiaSpinnerSolid } from "react-icons/lia";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import { useRouter } from "next/router";
@@ -24,7 +21,7 @@ const SigninForm = ({ formType }: { formType: FormType }) => {
     if (session?.user) {
       pushUser();
     }
-  }, [session]);
+  }, [session, router]); // Added router to dependencies
 
   const pushUser = async () => {
     try {
@@ -150,3 +147,4 @@ const SigninForm = ({ formType }: { formType: FormType }) => {
 };
 
 export default SigninForm;
+          
