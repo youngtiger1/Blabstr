@@ -1,17 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn, useSession } from "next-auth/react";
-import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
 import { LiaSpinnerSolid } from "react-icons/lia";
 import { toast } from "react-hot-toast";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 
 type FormType = "signin" | "signup";
 
-const SiginForm = ({ formType }: { formType: FormType }) => {
+const SigninForm = ({ formType }: { formType: FormType }) => {
   const [userInput, setUserInput] = useState({
     name: "",
     email: "",
@@ -21,29 +20,30 @@ const SiginForm = ({ formType }: { formType: FormType }) => {
   const router = useRouter();
   const { data: session } = useSession();
 
+  useEffect(() => {
+    if (session?.user) {
+      pushUser();
+    }
+  }, [session]);
+
   const pushUser = async () => {
-    toast(() => (
-      <span className=" animate-spin">
-        <LiaSpinnerSolid />
-      </span>
-    ));
     try {
       const response = await axios.put("/api/users/signup", session?.user);
       if (response.data === "Created New Account") {
         router.push("/setup-profile");
+      } else {
+        router.push("/home");
       }
     } catch (error) {
       if (!session?.user?.image) {
         router.push("/setup-profile");
-      } else router.push("/home");
+      } else {
+        router.push("/home");
+      }
     }
   };
 
-  if (session?.user) {
-    pushUser();
-  }
-
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (formType === "signin" && userInput.email && userInput.password) {
@@ -60,33 +60,31 @@ const SiginForm = ({ formType }: { formType: FormType }) => {
       userInput.password &&
       userInput.email
     ) {
-      toast
-        .promise(axios.put("/api/users/signup", userInput), {
-          loading: "Creating new account...",
-          success: <p>Successfully created account</p>,
-          error: (
-            <p>
-              Account with email <b>"{userInput.email}"</b> already exists
-            </p>
-          ),
-        })
-        .then((resp) => {
-          if (resp.data === "Created New Account") {
-            router.push("/signin");
-          }
-        });
-    } else toast.error("Fill all details");
+      try {
+        const response = await axios.put("/api/users/signup", userInput);
+        if (response.data === "Created New Account") {
+          router.push("/signin");
+        }
+      } catch (error) {
+        toast.error(
+          `Account with email "${userInput.email}" already exists`
+        );
+      }
+    } else {
+      toast.error("Fill all details");
+    }
   };
+
   return (
     <div className="flex flex-col items-center justify-center gap-4 p-2">
       <form
-        className=" flex flex-col items-center justify-center gap-4 p-2"
+        className="flex flex-col items-center justify-center gap-4 p-2"
         onSubmit={(e) => handleSubmit(e)}
       >
         {formType === "signup" && (
           <input
             type="text"
-            className=" min-w-0 rounded-lg border-2 border-darkGray bg-transparent p-2"
+            className="min-w-0 rounded-lg border-2 border-darkGray bg-transparent p-2"
             placeholder="Full Name"
             value={userInput.name}
             onChange={(e) =>
@@ -99,7 +97,7 @@ const SiginForm = ({ formType }: { formType: FormType }) => {
         )}
         <input
           type="email"
-          className=" min-w-0 rounded-lg border-2 border-darkGray bg-transparent p-2"
+          className="min-w-0 rounded-lg border-2 border-darkGray bg-transparent p-2"
           placeholder="Email"
           value={userInput.email}
           onChange={(e) =>
@@ -111,7 +109,7 @@ const SiginForm = ({ formType }: { formType: FormType }) => {
         />
         <input
           type="password"
-          className=" min-w-0 rounded-lg border-2 border-darkGray bg-transparent p-2"
+          className="min-w-0 rounded-lg border-2 border-darkGray bg-transparent p-2"
           placeholder="Password"
           value={userInput.password}
           onChange={(e) =>
@@ -123,14 +121,14 @@ const SiginForm = ({ formType }: { formType: FormType }) => {
         />
         <button
           type="submit"
-          className=" mt-4 rounded-lg bg-lightGray p-2 px-14 font-semibold dark:bg-darkGray md:w-full"
+          className="mt-4 rounded-lg bg-lightGray p-2 px-14 font-semibold dark:bg-darkGray md:w-full"
         >
           {formType === "signup" ? "Create Account" : "Sign in"}
         </button>
       </form>
-      <p className=" -my-3 text-xl font-semibold">or</p>
+      <p className="-my-3 text-xl font-semibold">or</p>
       <button
-        className=" flex items-center gap-2 rounded-md bg-extraLightGray p-2 font-bold shadow-xl dark:bg-lightTheme dark:text-darkTheme md:w-full"
+        className="flex items-center gap-2 rounded-md bg-extraLightGray p-2 font-bold shadow-xl dark:bg-lightTheme dark:text-darkTheme md:w-full"
         onClick={() => signIn("google")}
       >
         <FcGoogle />
@@ -140,15 +138,15 @@ const SiginForm = ({ formType }: { formType: FormType }) => {
         {formType === "signup"
           ? "Already have an account, "
           : "Don't have an Account , "}
-
-        <Link
+        <a
           href={formType === "signup" ? "/signin" : "/signup"}
           className="text-blue-500 underline dark:text-blue-300"
         >
           {formType === "signup" ? "Sign in" : "sign up"}
-        </Link>
+        </a>
       </p>
     </div>
   );
 };
-export default SiginForm;
+
+export default SigninForm;
