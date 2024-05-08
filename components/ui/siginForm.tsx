@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
@@ -21,7 +23,7 @@ const SigninForm = ({ formType }: { formType: FormType }) => {
     if (session?.user) {
       pushUser();
     }
-  }, [session, router]); // Added router to dependencies
+  }, [session, router]);
 
   const pushUser = async () => {
     try {
