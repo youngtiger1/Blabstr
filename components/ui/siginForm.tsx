@@ -27,9 +27,15 @@ const SiginForm = ({ formType }: { formType: FormType }) => {
         <LiaSpinnerSolid />
       </span>
     ));
-    const response = await axios.put("/api/users/signup", session?.user);
-    if (response.data === "Created New Account") {
-      router.push("/setup-profile");
+    try {
+      const response = await axios.put("/api/users/signup", session?.user);
+      if (response.data === "Created New Account") {
+        router.push("/setup-profile");
+      }
+    } catch (error) {
+      if (!session?.user?.image) {
+        router.push("/setup-profile");
+      } else router.push("/home");
     }
   };
 
@@ -58,11 +64,6 @@ const SiginForm = ({ formType }: { formType: FormType }) => {
         .promise(axios.put("/api/users/signup", userInput), {
           loading: "Creating new account...",
           success: <p>Successfully created account</p>,
-          error: (
-            <p>
-              Account with email <b>"{userInput.email}"</b> already exists
-            </p>
-          ),
         })
         .then((resp) => {
           if (resp.data === "Created New Account") {
@@ -146,4 +147,3 @@ const SiginForm = ({ formType }: { formType: FormType }) => {
   );
 };
 export default SiginForm;
-          
