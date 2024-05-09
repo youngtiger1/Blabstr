@@ -64,6 +64,7 @@ const SiginForm = ({ formType }: { formType: FormType }) => {
         .promise(axios.put("/api/users/signup", userInput), {
           loading: "Creating new account...",
           success: <p>Successfully created account</p>,
+          error: "", // Empty error property
         })
         .then((resp) => {
           if (resp.data === "Created New Account") {
@@ -147,3 +148,4 @@ const SiginForm = ({ formType }: { formType: FormType }) => {
   );
 };
 export default SiginForm;
+          
